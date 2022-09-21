@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -220,18 +221,34 @@ namespace ShoppingHelperV2
             //cartPrice();
         }
 
-        public async Task<List<int>> UpdatedItemPrices(List<ShoppingClasses.Item> items)
+        public async Task<List<int>> UpdatedItemPrices(List<ShoppingClasses.Item> items, BackgroundWorker worker)
         {
-            List<int> prices = new List<int>();
-            Debug.WriteLine($"Checking for prices {items.Count}");
+            ProgressBar progressBarForm;
+            progressBarForm = new();      
+            int finalPercentage = (100 / items.Count);
+            int count = 0;
+            List<int> prices = new List<int>();         
+            string caption = $"Checking for prices {items.Count}";
+            Debug.WriteLine(caption);
             Debug.WriteLine("Running");
+            progressBarForm.Text = caption;
+            progressBarForm.SetCaption("");
+            progressBarForm.Show();
             foreach (var item in items)
-            {   
+            {
                 var task = await GetPriceSurugaya(item.link);
                 int cost = task;
+                string message = $"{item.Name} costs {cost.ToString("c")}";
+                progressBarForm.SetCaption(message);
                 Debug.WriteLine(cost);
                 prices.Add(cost);
+                count += finalPercentage;
+                progressBarForm.UpdateBarProgress(count);
+                worker.ReportProgress(count);
             }
+            worker.ReportProgress(100);
+            progressBarForm.UpdateBarProgress(100);
+            progressBarForm.Close();
             Debug.WriteLine("Ran");
             return prices;
         }

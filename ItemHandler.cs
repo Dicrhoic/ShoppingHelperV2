@@ -24,11 +24,11 @@ namespace ShoppingHelperV2
             Debug.WriteLine(answer);
             if(answer)
             {
-                WriteToDB(product, fileName);
+                WriteToDB(product, fileName, dataBase, dbName);
             }
         }
 
-        public static void WriteToDB(Item product, string fileName)
+        public static void WriteToDB(Item product, string fileName, List<Item> database, string dbName)
         {
             Debug.WriteLine("Writer called");
             MessageHandler messageHandler = new();
@@ -38,8 +38,9 @@ namespace ShoppingHelperV2
           
             if (v != null)
             {
+                string truePath = @"" + fileName;
                 Debug.WriteLine("Preparing to write to file");
-                string path = Path.Combine(v, fileName);
+                string path = Path.Combine(v, pathEnd);
                 XmlDocument doc = new()
                 {
                     PreserveWhitespace = true
@@ -82,7 +83,7 @@ namespace ShoppingHelperV2
                     doc.Save(path);
                     string message = $"Added {product.Name} to wishlist!";
                     string caption = "Item added successfully";
-                    
+                    database.Add(product);
                 }
                 catch (Exception ex)
                 {
@@ -91,6 +92,27 @@ namespace ShoppingHelperV2
                 }
 
             }
+            Form origin = Application.OpenForms["Form1"];
+            if (origin != null)
+            {
+                DatabaseHandler databaseHandler = new DatabaseHandler();
+                switch (dbName)
+                {
+                    case "Wish List":
+                        var panel1 = origin.Controls["sidePanel"];
+                        RichTextBox listViewer = (RichTextBox)panel1.Controls["wishListHolder"];
+                        databaseHandler.WriteToDataField(listViewer, database, dbName);
+                        Debug.WriteLine("Updated?");
+                        break;
+                    case "Cart":
+                        var panel2 = origin.Controls["cartPanel"];
+                        RichTextBox listViewer2 = (RichTextBox)panel2.Controls["cartList"];
+                        databaseHandler.WriteToDataField(listViewer2, database, dbName);
+                        break;
+                }
+            }
+           
+           
         }       
     }
 }

@@ -299,6 +299,7 @@
             // backgroundWorker1
             // 
             this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.UpdateProgress);
             // 
             // Form1
             // 
@@ -357,6 +358,6 @@
         private Button addToCartBtn;
         private Panel commentPanel;
         private Button checkOutBtn;
-        public System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }

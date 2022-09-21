@@ -96,6 +96,7 @@ namespace ShoppingHelperV2
                         ItemHandler handler = new();
                         Debug.WriteLine("Calling handler.....");
                         handler.WriteToLocalDB(databaseHandler.wishListDB, shoppingHelper.currentItem, "listDB.xml", "Wish List");
+                        
                     }
                     if (shoppingHelper.currentItem == null)
                     {
@@ -193,19 +194,30 @@ namespace ShoppingHelperV2
         {
             var product = shoppingHelper.currentItem;
             string link = urlInputTB.Text;
-            if (link is not null)
+            if (link is not null && product is null)
             {
                 if(ItemIsLoaded(link))
                 {
+                    ItemHandler handler = new();
                     var item = shoppingHelper.currentItem;
+                    if(item is not null)
+                    {
+                        handler.WriteToLocalDB(databaseHandler.cartDB, item, "cart.xml", "Cart");
+                    }                
                 }
             }
             if (product is not null)
             {
                 if (ItemIsLoaded(product))
                 {
-
+                    ItemHandler handler = new();
+                    handler.WriteToLocalDB(databaseHandler.cartDB, product, "cart.xml", "Cart");
                 }
+            }
+            else
+            {
+                Debug.WriteLine("Booleans failed");
+                return;
             }
            
 
@@ -253,12 +265,30 @@ namespace ShoppingHelperV2
             int dbCount = databaseHandler.wishListDB.Count;
             if (dbCount != 0)
             {   
-                var list = await shoppingHelper.UpdatedItemPrices(databaseHandler.wishListDB);
+                var list = await shoppingHelper.UpdatedItemPrices(databaseHandler.wishListDB, backgroundWorker1);
                 if(list is not null)
-                {   
-                    databaseHandler.createCheckoutFile(list);
+                {
+                    //databaseHandler.CreateCheckoutFile(list, backgroundWorker1);
+                    var task = await databaseHandler.CheckoutFileCreated(list, backgroundWorker1);
+                    if(task)
+                    {
+                        Debug.WriteLine("Created file");
+                    }
                 }
                 //shoppingHelper.UpdatedItemPrices(databaseHandler.wishListDB);
+            }
+        }
+
+        private void UpdateProgress(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            Debug.WriteLine($"Progress changed: {e.ProgressPercentage}");
+            var progressPercentage = e.ProgressPercentage;
+            Form bar = Application.OpenForms["ProgressBar"];
+            if(bar is not null)
+            {
+                var barForm = (ProgressBar)bar;
+                barForm.UpdateBarProgress(e.ProgressPercentage);
+                
             }
         }
     }

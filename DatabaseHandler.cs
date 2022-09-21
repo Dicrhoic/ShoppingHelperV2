@@ -238,6 +238,7 @@ namespace ShoppingHelperV2
         }
         public void WriteToDataField(RichTextBox textBox, List<Item> database, string fileType)
         {
+            Debug.WriteLine("Writer to list called");
             Thread.CurrentThread.CurrentCulture = new CultureInfo("ja-JP");
             string contents = $"{fileType} Items: \n";
             int count = 1;
@@ -285,9 +286,145 @@ namespace ShoppingHelperV2
             File.WriteAllText(fileName, jsonString);
         }
 
-        public void createCheckoutFile(List<int> priceList, BackgroundWorker worker)
+        public void CreateCheckoutFile(List<int> priceList, BackgroundWorker worker)
         {
+            if(cartDB.Count > 0)
+            {
+                ProgressBar progressBarForm;
+                progressBarForm = new();
+                progressBarForm.Show();
+                
+                int finalPercentage = (100/cartDB.Count) - 10;
+                int count = 0;
+                string dir = Directory.GetCurrentDirectory();
+                string dest = System.IO.Path.Combine(dir, "Purchases");
+                if (!Directory.Exists(dest))
+                {
+                    Directory.CreateDirectory(dest);
+                }
+                Directory.SetCurrentDirectory(dest);
 
+                DateTime currentDT = DateTime.Now;
+                DateTime dateOnly = currentDT.Date;
+                string fileName = currentDT.ToString("dd-MM-yyyy-HH-mm");
+                string title = dateOnly.ToString("D");
+                string header = "Purchase for " + title;
+                int index = 0;
+                string path = fileName + ".html";
+                string formTitle = $"Checkout file {path}";
+                progressBarForm.SetCaption(formTitle);
+                using (FileStream fs = File.Create(path))
+                {
+
+                }
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    HtmlTextWriter htmlTextWriter = new(sw);
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Html);
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Head);
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Title);
+                    htmlTextWriter.Write(fileName);
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Style);
+                    htmlTextWriter.Write(CSSFormat());
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.H1);
+                    htmlTextWriter.Write(header);
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Table);
+                    htmlTextWriter.AddAttribute("id", "receipt");
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
+                    htmlTextWriter.AddAttribute("id", "headerRow");
+
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Th);
+                    htmlTextWriter.Write("Item name");
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.WriteLine();
+
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Th);
+                    htmlTextWriter.Write("Vendor");
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.WriteLine();
+
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Th);
+                    htmlTextWriter.Write("Price");
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.WriteLine();
+
+                    htmlTextWriter.RenderEndTag();
+
+                    foreach (var item in cartDB)
+                    {
+                        string caption = $"Adding {item.Name} to reciept";
+                        htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
+                        htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
+                        htmlTextWriter.WriteBeginTag("a");
+                        htmlTextWriter.WriteAttribute("href", item.link);
+                        htmlTextWriter.Write(">");
+                        htmlTextWriter.Write(item.Name);
+                        htmlTextWriter.WriteEndTag("a");
+                        htmlTextWriter.RenderEndTag();
+                        htmlTextWriter.WriteLine();
+
+                        htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
+                        htmlTextWriter.Write(item.Vendor);
+                        htmlTextWriter.RenderEndTag();
+                        htmlTextWriter.WriteLine();
+
+                        htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
+                        string priceValue = "Item Sold Out";
+                        if (priceList[index] != -1)
+                        {
+                            priceValue = priceList[index].ToString("c");
+                        }
+                        htmlTextWriter.Write(priceValue);
+                        htmlTextWriter.RenderEndTag();
+                        htmlTextWriter.WriteLine();
+
+                        htmlTextWriter.RenderEndTag();
+                        index++;
+                        count += finalPercentage;
+                        progressBarForm.SetCaption(caption);
+                        worker.ReportProgress(count);
+                        progressBarForm.BarStepUp();
+                    }
+                    //sum section
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
+                    htmlTextWriter.AddAttribute("id", "totalRow");
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
+                    htmlTextWriter.Write($"Total Cost of {priceList.Count} items");
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.WriteLine();
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
+                    htmlTextWriter.Write("");
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.WriteLine();
+                    htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
+                    htmlTextWriter.Write(priceList.Sum().ToString("c"));
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.RenderEndTag();
+                    htmlTextWriter.WriteLine();
+                    htmlTextWriter.Close();
+                    worker.ReportProgress(100);
+                }
+                //string message = "Created file " + path + " in " + dest;
+                //string caption = "File made";
+                ConvertToPDF(path, fileName);
+                //OpenFilePrompt(path);
+               
+            }          
+        }
+
+        public async Task<bool> CheckoutFileCreated(List<int> priceList, BackgroundWorker worker)
+        {
+            ProgressBar progressBarForm;
+            progressBarForm = new();
+            progressBarForm.Show();
+
+            int finalPercentage = (100 / cartDB.Count) - 10;
+            int count = 0;
             string dir = Directory.GetCurrentDirectory();
             string dest = System.IO.Path.Combine(dir, "Purchases");
             if (!Directory.Exists(dest))
@@ -303,6 +440,8 @@ namespace ShoppingHelperV2
             string header = "Purchase for " + title;
             int index = 0;
             string path = fileName + ".html";
+            string formTitle = $"Checkout file {path}";
+            progressBarForm.SetCaption(formTitle);
             using (FileStream fs = File.Create(path))
             {
 
@@ -346,6 +485,7 @@ namespace ShoppingHelperV2
 
                 foreach (var item in cartDB)
                 {
+                    string caption = $"Adding {item.Name} to reciept";
                     htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
                     htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
                     htmlTextWriter.WriteBeginTag("a");
@@ -373,6 +513,11 @@ namespace ShoppingHelperV2
 
                     htmlTextWriter.RenderEndTag();
                     index++;
+                    count += finalPercentage;
+                    progressBarForm.SetCaption(caption);
+                    worker.ReportProgress(count);
+                    await Task.Delay(50);
+                    progressBarForm.BarStepUp();
                 }
                 //sum section
                 htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
@@ -392,11 +537,11 @@ namespace ShoppingHelperV2
                 htmlTextWriter.RenderEndTag();
                 htmlTextWriter.WriteLine();
                 htmlTextWriter.Close();
+                worker.ReportProgress(100);
+                progressBarForm.Close();
+                await Task.Delay(100);
             }
-            //string message = "Created file " + path + " in " + dest;
-            //string caption = "File made";
-            OpenFilePrompt(path);
-            ConvertToPDF(path, fileName);
+                return true;
         }
 
         private string CSSFormat()
@@ -442,7 +587,7 @@ namespace ShoppingHelperV2
         public void OpenFilePrompt(string path)
         {
             string message = "Would you like to open the file " + path + " ?";
-            string caption = "File" + path + "made";
+            string caption = "File:" + path + " made";
             MessageBoxButtons buttons = MessageBoxButtons.YesNo;
             DialogResult result;
 
