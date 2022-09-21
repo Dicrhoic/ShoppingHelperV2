@@ -262,10 +262,10 @@ namespace ShoppingHelperV2
 
         private async void checkOutBtn_Click(object sender, EventArgs e)
         {
-            int dbCount = databaseHandler.wishListDB.Count;
+            int dbCount = databaseHandler.cartDB.Count;
             if (dbCount != 0)
             {   
-                var list = await shoppingHelper.UpdatedItemPrices(databaseHandler.wishListDB, backgroundWorker1);
+                var list = await shoppingHelper.UpdatedItemPrices(databaseHandler.cartDB, backgroundWorker1);
                 if(list is not null)
                 {
                     //databaseHandler.CreateCheckoutFile(list, backgroundWorker1);
@@ -290,6 +290,11 @@ namespace ShoppingHelperV2
                 barForm.UpdateBarProgress(e.ProgressPercentage);
                 
             }
+        }
+
+        private void OpenRecieptFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            databaseHandler.OpenFilePrompt(databaseHandler.CheckoutRecieptDirectory());
         }
     }
 }

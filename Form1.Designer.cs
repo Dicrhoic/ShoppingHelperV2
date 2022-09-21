@@ -53,6 +53,7 @@
             this.productInfo = new System.Windows.Forms.RichTextBox();
             this.productImage = new System.Windows.Forms.PictureBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.openRecieptFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.sidePanel.SuspendLayout();
             this.searchPanel.SuspendLayout();
@@ -74,6 +75,8 @@
             // 
             // menuToolStripMenuItem
             // 
+            this.menuToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openRecieptFolderToolStripMenuItem});
             this.menuToolStripMenuItem.Name = "menuToolStripMenuItem";
             this.menuToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
             this.menuToolStripMenuItem.Text = "Menu";
@@ -301,6 +304,13 @@
             this.backgroundWorker1.WorkerReportsProgress = true;
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.UpdateProgress);
             // 
+            // openRecieptFolderToolStripMenuItem
+            // 
+            this.openRecieptFolderToolStripMenuItem.Name = "openRecieptFolderToolStripMenuItem";
+            this.openRecieptFolderToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.openRecieptFolderToolStripMenuItem.Text = "Open Reciept Folder";
+            this.openRecieptFolderToolStripMenuItem.Click += new System.EventHandler(this.OpenRecieptFolderToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -359,5 +369,6 @@
         private Panel commentPanel;
         private Button checkOutBtn;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private ToolStripMenuItem openRecieptFolderToolStripMenuItem;
     }
 }

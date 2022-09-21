@@ -21,7 +21,6 @@ namespace ShoppingHelperV2
         public List<Item> wishListDB = new();
         public List<Item> cartDB = new();
         public Form origin = Application.OpenForms["Form1"];
-
         public DatabaseHandler()
         {
             Debug.WriteLine("DatabaseHandler Called");
@@ -486,6 +485,7 @@ namespace ShoppingHelperV2
                 foreach (var item in cartDB)
                 {
                     string caption = $"Adding {item.Name} to reciept";
+                    Debug.WriteLine(caption);
                     htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
                     htmlTextWriter.RenderBeginTag(HtmlTextWriterTag.Td);
                     htmlTextWriter.WriteBeginTag("a");
@@ -539,7 +539,9 @@ namespace ShoppingHelperV2
                 htmlTextWriter.Close();
                 worker.ReportProgress(100);
                 progressBarForm.Close();
-                await Task.Delay(100);
+                ConvertToPDF(path, fileName);
+                OpenFilePrompt(path);
+                await Task.Delay(200);
             }
                 return true;
         }
@@ -595,7 +597,10 @@ namespace ShoppingHelperV2
             result = MessageBox.Show(message, caption, buttons);
             if (result == DialogResult.Yes)
             {
-                Process.Start(path);
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = path;
+                psi.UseShellExecute = true;
+                Process.Start(psi);
             }
         }
 
@@ -621,6 +626,19 @@ namespace ShoppingHelperV2
 
             var PDF = Renderer.RenderHtmlFileAsPdf(xmlFile);
             PDF.SaveAs($"{outputName}.pdf");
+        }
+
+        public string CheckoutRecieptDirectory()
+        {
+            string dir = Directory.GetCurrentDirectory();
+            string dest = System.IO.Path.Combine(dir, "Purchases");
+            if (!Directory.Exists(dest))
+            {
+                Directory.CreateDirectory(dest);
+            }
+            Directory.SetCurrentDirectory(dest);
+            return dest;
+
         }
     }
 }
